@@ -1,6 +1,7 @@
 ﻿using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
+using System.Diagnostics.Metrics;
 
 namespace PokemonReviewApp.Repository
 {
@@ -12,9 +13,36 @@ namespace PokemonReviewApp.Repository
             _context = context;
         }
 
+        public bool CreatePokemon(int ownerId, int categoryId, Pokemon pokemon)
+        {
+            var pokemonOwnerEntity = _context.Owners.Where(o => o.Id == ownerId).FirstOrDefault();
+            var category = _context.Categories.Where(c => c.ID == categoryId).FirstOrDefault();
+
+            var pokemonOwner = new PokemonOwner()
+            {
+                Owner = pokemonOwnerEntity,
+                Pokemon = pokemon,
+
+            };
+
+            _context.Add(pokemonOwner);
+
+            var pokemonCategory = new PokemonCategory()
+            {
+                Category = category,
+                Pokemon = pokemon,
+            };
+
+            _context.Add(pokemonCategory);
+
+            _context.Add(pokemon);
+
+            return Save();
+        }
+
         public Pokemon GetPokemon(int id)
         {
-            return _context.Pokemons.Where(p => p.ID == id).FirstOrDefault();
+            return _context.Pokemons.Where(p => p.Id == id).FirstOrDefault();
         }
 
         public Pokemon GetPokemon(string name)
@@ -24,7 +52,7 @@ namespace PokemonReviewApp.Repository
 
         public decimal GetPokemonRating(int pokeId)
         {
-            var review = _context.Reviews.Where(p => p.Pokemon.ID == pokeId);
+            var review = _context.Reviews.Where(p => p.Pokemon.Id == pokeId);
             if(review.Count() <= 0)
             {
                 return 0;
@@ -34,12 +62,24 @@ namespace PokemonReviewApp.Repository
 
         public ICollection<Pokemon> GetPokemons()
         {
-            return _context.Pokemons.OrderBy(p => p.ID).ToList();
+            return _context.Pokemons.OrderBy(p => p.Id).ToList();
         }
 
-        public bool PokemonExists(int pokeId)
+        public bool PokemonExist(int pokeId)
         {
-            return _context.Pokemons.Any(p => p.ID == pokeId);
+            return _context.Pokemons.Any(p => p.Id == pokeId);
+        }
+
+        public bool Save()
+        {
+            var saved = _context.SaveChanges();
+            return saved > 0 ? true : false;
+        }
+
+        public bool UpdatePokemon(int ownerId, int categoryId, Pokemon pokemon)
+        {
+            _context.Update(pokemon);
+            return Save();
         }
     }
 }
