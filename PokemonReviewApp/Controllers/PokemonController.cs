@@ -13,12 +13,14 @@ namespace PokemonReviewApp.Controllers
     public class PokemonController : Controller
     {
         private IPokemonRepository _pokemonRepository;
+        private readonly IReviewRepository _reviewRepository;
         private readonly IMapper _mapper;
 
-        public PokemonController(IPokemonRepository pokemonRepository, IMapper mapper)
+        public PokemonController(IPokemonRepository pokemonRepository, IReviewRepository reviewRepository, IMapper mapper)
         {
-            this._pokemonRepository = pokemonRepository;
-            this._mapper = mapper;
+            _pokemonRepository = pokemonRepository;
+            _reviewRepository = reviewRepository;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -114,7 +116,10 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdatePokemon(int pokeId, [FromBody] PokemonDto updatePokemon)
+        public IActionResult UpdatePokemon(int pokeId, 
+            [FromQuery] int ownerId, 
+            [FromQuery] int categoryId, 
+            [FromBody] PokemonDto updatePokemon)
         {
             if (updatePokemon == null)
             {
@@ -138,7 +143,7 @@ namespace PokemonReviewApp.Controllers
 
             var pokemonMap = _mapper.Map<Pokemon>(updatePokemon);
 
-            if (!_pokemonRepository.UpdatePokemon(pokemonMap))
+            if (!_pokemonRepository.UpdatePokemon(ownerId, categoryId, pokemonMap))
             {
                 ModelState.AddModelError("", "Something went wrong updating pokemon");
                 return StatusCode(500, ModelState);

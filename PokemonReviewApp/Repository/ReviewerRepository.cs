@@ -38,7 +38,7 @@ namespace PokemonReviewApp.Repository
             return _context.Reviews.Where(r => r.Reviewer.Id == reviewerId).ToList();
         }
 
-        public bool ReviewerExists(int reviewerId)
+        public bool ReviewerExist(int reviewerId)
         {
             return _context.Reviewers.Any(r => r.Id == reviewerId);
         }
@@ -47,6 +47,12 @@ namespace PokemonReviewApp.Repository
         {
             var saved = _context.SaveChanges();
             return saved > 0 ? true : false;
+        }
+
+        public bool UpdateReviewer(Reviewer reviewer)
+        {
+            _context.Update(reviewer);
+            return Save();
         }
     }
 }
